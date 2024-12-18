@@ -1,0 +1,36 @@
+---
+import type { GetStaticPaths } from "astro";
+import MainLayout from "../../layouts/MainLayout.astro";
+import PokemonCard from "../../components/PokemonCard.astro";
+import type { PokemonListResponse } from "../../interfaces/pokemon-return-api";
+
+export const getStaticPaths = (async () => {
+  const resp = await fetch("https://pokeapi.co/api/v2/pokemon?limit=151");
+  const { results } = (await resp.json()) as PokemonListResponse;
+
+  return results.map(({ name, url }) => ({
+    params: { name },
+    props: { name, url },
+  }));
+}) satisfies GetStaticPaths;
+
+const { name } = Astro.params;
+const { url } = Astro.props;
+
+const poke_id = url.split("/").at(-2);
+
+const audioSrc = `https://raw.githubusercontent.com/PokeAPI/cries/main/cries/pokemon/legacy/${poke_id}.ogg`;
+---
+
+<MainLayout title="">
+  <section class="flex flex-col gap-4 items-center">
+    <div>
+      <a href="/" class="text-slate-500">Return</a>
+      <h1 class="text-slate-300 text-3xl capitalize mb-4">Meet: {name}</h1>
+      <PokemonCard name={name} url={url} isBig />
+    </div>
+    <audio controls class="items-center">
+      <source src={audioSrc} />
+    </audio>
+  </section>
+</MainLayout>
